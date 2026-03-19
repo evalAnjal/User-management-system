@@ -28,7 +28,7 @@ export async function PATCH(request,props){
         ...body,
         id:id
     }
-    return NextResponse.json({message:'user created suscessfully',user:users});
+    return NextResponse.json({message:'user Modified suscessfully',user:users});
     }
 
     catch(e){
@@ -39,6 +39,8 @@ export async function PATCH(request,props){
 }
 
 export async function DELETE(request,props){
+
+    try{
     const params = await props.params;
     const id = params.id;
 
@@ -47,8 +49,12 @@ export async function DELETE(request,props){
 
     if (userIndex==-1) return NextResponse.json({message:'user does not exist'})
 
-    users.splice(userIndex)
+    users.splice(userIndex,1)
 
-    return NextResponse.json({message:`user with id ${id} deleted suscessfully`},{users:users})
+    return NextResponse.json({message:`user with id ${id} deleted suscessfully`})
 
+}
+catch(e){
+    return NextResponse.json({error:e})
+}
 }

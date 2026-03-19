@@ -21,8 +21,14 @@ export default function Home() {
     loadUsers();
   }, []);
 
-  function handleDelete(id){
-    
+ async function handleDelete(id){
+    const response= await fetch(`/api/users/${id}`,{method:'DELETE'})
+    const body = response.json()
+     console.log(body.message)
+    if (!response.ok) {
+  throw new Error('Failed to delete user');
+}
+   
     
   }
 
