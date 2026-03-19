@@ -1,31 +1,8 @@
 import { NextResponse } from "next/server"
-
-export var users = [
-    {
-        id:1,
-        name:'hari sharma acharya',
-        profileUrl:'https://images.pexels.com/photos/36597902/pexels-photo-36597902.jpeg',
-        email:'hari@email.com',
-        role:'admin'
-    },
-    {
-        id:2,
-        name:'gagan kumar thapa',
-        profileUrl:'https://images.pexels.com/photos/36612578/pexels-photo-36612578.jpeg',
-        email:'gagan@email.com',
-        role:'user'
-    },
-    {
-        id:3,
-        name:'Roshan basnet',
-        profileUrl:'https://images.pexels.com/photos/36606986/pexels-photo-36606986.jpeg',
-        email:'roshan@email.com',
-        role:'user'
-    }
-]
+import { readUsers, writeUsers } from '../../../lib/users'
 
 export async function GET(request){
-
+    const users = await readUsers()
     return NextResponse.json(users)
 }
 
@@ -35,8 +12,10 @@ export async function POST(request){
 
     if (!name||!profileUrl||!email||!role) return NextResponse.json({message:"Missing Paramaters"},{status:400})
 
+    const users = await readUsers()
+
     const newUser={
-        id:users.length+1,
+        id: users.length ? Math.max(...users.map(u=>u.id)) + 1 : 1,
         name:name,
         profileUrl:profileUrl,
         email:email,
@@ -44,8 +23,9 @@ export async function POST(request){
 
     }
 
-
     users.push(newUser)
+
+    await writeUsers(users)
 
     return NextResponse.json({message:'User Added suscessfully',users:users})
 }
