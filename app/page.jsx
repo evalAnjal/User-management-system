@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 import UserModal from "@/_components/UserModal";
+import AddUserModal from '@/_components/AddUserModal'
+import EditUserModal from '@/_components/EditUserModal'
 
 export default function Home() {
 
   const [users, setUsers] = useState([]); 
   const [query, setQuery] = useState('')
+  const [showAdd, setShowAdd] = useState(false)
+  const [editing, setEditing] = useState(null)
 
   useEffect(() => {
     async function loadUsers() {
@@ -22,14 +26,33 @@ export default function Home() {
   }, []);
 
  async function handleDelete(id){
-    const response= await fetch(`/api/users/${id}`,{method:'DELETE'})
-    const body = response.json()
-     console.log(body.message)
-    if (!response.ok) {
-  throw new Error('Failed to delete user');
-}
-   
-    
+    try{
+      const response = await fetch(`/api/users/${id}`,{method:'DELETE', credentials: 'include'})
+      const body = await response.json()
+      if (!response.ok) {
+        window.alert(body.message || 'Failed to delete user')
+        return
+      }
+      // remove locally for immediate UI feedback
+      setUsers(prev => prev.filter(u=> u.id !== id))
+    } catch(err) {
+      console.error(err)
+      window.alert('Failed to delete user')
+    }
+  }
+
+  function handleCreate(newUser){
+    if(!newUser) return
+    setUsers(prev => [newUser, ...prev])
+  }
+
+  function handleEdit(id){
+    const user = users.find(u=> u.id === id)
+    setEditing(user || null)
+  }
+
+  function handleSave(updated){
+    setUsers(prev => prev.map(u=> u.id === updated.id ? updated : u))
   }
 
   const filtered = users.filter(u => u.name?.toLowerCase().includes(query.toLowerCase()) || u.email?.toLowerCase().includes(query.toLowerCase()))
@@ -55,7 +78,7 @@ export default function Home() {
             placeholder="Search by name or email..."
             style={{flex:1, padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', outline:'none', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.5)'}}
           />
-          <button style={{padding:'10px 14px', background:'#2563eb', color:'#fff', border:'none', borderRadius:10, cursor:'pointer'}}>Add user</button>
+          <button onClick={()=>setShowAdd(true)} style={{padding:'10px 14px', background:'#2563eb', color:'#fff', border:'none', borderRadius:10, cursor:'pointer'}}>Add user</button>
         </div>
 
         <main>
@@ -64,12 +87,15 @@ export default function Home() {
           ) : (
             <div style={{display:'flex', flexDirection:'column', gap:14, paddingBottom:8}}>
               {filtered.map(user => (
-                <UserModal key={user.id} {...user} bg="#fafafa" handleDelete={handleDelete} />
+                <UserModal key={user.id} {...user} bg="#fafafa" handleDelete={handleDelete} handleEdit={handleEdit} />
               ))}
             </div>
           )}
         </main>
       </div>
+
+      {showAdd && <AddUserModal onClose={()=>setShowAdd(false)} onCreate={handleCreate} />}
+      {editing && <EditUserModal user={editing} onClose={()=>setEditing(null)} onSave={handleSave} />}
     </div>
   );
 }

@@ -3,13 +3,17 @@ import React from 'react'
 import Image from 'next/image'
 
 function UserModal(props) {
-    const {id,name,profileUrl,email,role,bg,handleDelete}=props
+    const {id,name,profileUrl,email,role,bg,handleDelete,handleEdit}=props
 
     function onDelete(){
       const ok = window.confirm(`Delete user ${name}?`)
       if(!ok) return
       if(typeof handleDelete === 'function') handleDelete(id)
       else window.alert(`Deleted ${id}`)
+    }
+
+    function onEdit(){
+      if(typeof handleEdit === 'function') handleEdit(id)
     }
 
     const cardStyle = {
@@ -70,7 +74,7 @@ function UserModal(props) {
         </div>
 
         <div style={{display:'flex',gap:'10px'}}>
-          <button style={{...btnCommon,background:'#60a5fa'}} title="Edit">Edit</button>
+          <button onClick={onEdit} style={{...btnCommon,background:'#60a5fa'}} title="Edit">Edit</button>
           <button onClick={onDelete} style={{...btnCommon,background:'#ef4444'}} title="Delete">Delete</button>
         </div>
       </div>

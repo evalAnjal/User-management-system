@@ -9,11 +9,11 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.3",
     "next": "16.1.7",
     "react": "19.2.3",
-    "react-dom": "19.2.3",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0"
+    "react-dom": "19.2.3"
   },
   "devDependencies": {
     "eslint": "^9",

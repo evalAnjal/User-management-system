@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { readUsers, writeUsers } from '../../../../lib/users'
+import { verifyTokenFromRequest } from '../../../../lib/auth'
 
 export  async  function GET(request, { params }){
     const id = Number(params.id)
@@ -16,6 +17,9 @@ export  async  function GET(request, { params }){
 export async function PATCH(request,{ params }){
 
     try{
+    const authed = verifyTokenFromRequest(request)
+    if(!authed) return NextResponse.json({message:'Unauthorized'},{status:401})
+
     const id = Number(params.id);
     const body = await request.json()
 
@@ -46,6 +50,12 @@ export async function PATCH(request,{ params }){
 export async function DELETE(request,{ params }){
 
     try{
+    const authed = verifyTokenFromRequest(request)
+    if(!authed) return NextResponse.json({message:'Unauthorized'},{status:401})
+
+    // only admin can delete
+    if(authed.role !== 'admin') return NextResponse.json({message:'Forbidden'},{status:403})
+
     const id = Number(params.id);
 
     const users = await readUsers()
