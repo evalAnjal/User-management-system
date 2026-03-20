@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "name": "ss",
+    "email": "ss@ss",
+    "passwordHash": "$2a$10$MUpWNw37EMBwjYREqyKYQuYFdzXFNwzWYuZePpQowbY5/Sf83XpyG",
+    "role": "user",
+    "createdAt": "2026-03-20T13:20:23.414Z"
+  },
+  {
+    "id": 2,
+    "name": "aa",
+    "email": "aa@aa",
+    "passwordHash": "$2a$10$x5rZSA1ekMSXv3SC70oGiOKYsSJrO9RvfuQ5lO1aaDX6kZuZLGFJG",
+    "role": "user",
+    "createdAt": "2026-03-20T13:23:36.643Z"
+  }
+]

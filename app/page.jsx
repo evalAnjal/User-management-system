@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation'
 import UserModal from "@/_components/UserModal";
 import AddUserModal from '@/_components/AddUserModal'
 import EditUserModal from '@/_components/EditUserModal'
@@ -12,6 +13,8 @@ export default function Home() {
   const [showAdd, setShowAdd] = useState(false)
   const [editing, setEditing] = useState(null)
   const [auth, setAuth] = useState(null)
+  const [authChecked, setAuthChecked] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     async function loadUsers() {
@@ -30,11 +33,19 @@ export default function Home() {
         if(data?.authenticated) setAuth(data.user)
         else setAuth(null)
       }catch(e){ setAuth(null) }
+      finally{ setAuthChecked(true) }
     }
 
     loadUsers();
     loadAuth();
   }, []);
+
+  useEffect(()=>{
+    // after auth check completed, if not authenticated redirect to login
+    if(authChecked && !auth){
+      router.replace('/login')
+    }
+  },[authChecked, auth, router])
 
   async function handleLogout(){
     try{
@@ -79,6 +90,10 @@ export default function Home() {
 
   const filtered = users.filter(u => u.name?.toLowerCase().includes(query.toLowerCase()) || u.email?.toLowerCase().includes(query.toLowerCase()))
 
+  if(!authChecked) return null // still checking
+  // if authChecked && !auth we already redirected; avoid rendering
+  if(!auth) return null
+
   return (
     <div style={{fontFamily: 'Inter, system-ui, -apple-system, sans-serif', padding: 24, display:'flex', justifyContent:'center'}}>
       <div style={{width: 'min(1100px, 96%)'}}>
@@ -98,12 +113,7 @@ export default function Home() {
                 <div style={{fontWeight:700}}>{auth.name}</div>
                 <button onClick={handleLogout} style={{marginLeft:8, padding:'6px 10px', borderRadius:8, border:'none', background:'#ef4444', color:'#fff', cursor:'pointer'}}>Logout</button>
               </div>
-            ) : (
-              <div style={{display:'flex',gap:8}}>
-                <a href="/login" style={{padding:'8px 12px', borderRadius:8, background:'#fff', border:'1px solid #e5e7eb', textDecoration:'none', color:'#111'}}>Login</a>
-                <a href="/register" style={{padding:'8px 12px', borderRadius:8, background:'#2563eb', color:'#fff', textDecoration:'none'}}>Register</a>
-              </div>
-            )}
+            ) : null}
           </div>
         </header>
 
@@ -116,9 +126,7 @@ export default function Home() {
           />
           {auth ? (
             <button onClick={()=>setShowAdd(true)} style={{padding:'10px 14px', background:'#2563eb', color:'#fff', border:'none', borderRadius:10, cursor:'pointer'}}>Add user</button>
-          ) : (
-            <div style={{color:'#6b7280',fontSize:'0.9rem'}}>Login to create users</div>
-          )}
+          ) : null}
         </div>
 
         <main>

@@ -5,7 +5,10 @@ import { verifyTokenFromRequest } from '../../../../lib/auth'
 export  async  function GET(request, { params }){
     const id = Number(params.id)
 
-    const users = await readUsers()
+    const authed = verifyTokenFromRequest(request)
+    const ownerId = authed ? authed.id : null
+
+    const users = await readUsers(ownerId)
     const userByID= users.find(user=> user.id===id)
 
     if (!userByID) return NextResponse.json({message:`User with ID ${id} does not exist`},{status:400})
@@ -23,7 +26,7 @@ export async function PATCH(request,{ params }){
     const id = Number(params.id);
     const body = await request.json()
 
-    const users = await readUsers()
+    const users = await readUsers(authed.id)
 
     const userIndex = users.findIndex(user=> user.id===id);
 
@@ -35,7 +38,7 @@ export async function PATCH(request,{ params }){
         id:id
     }
 
-    await writeUsers(users)
+    await writeUsers(users, authed.id)
 
     return NextResponse.json({message:'user Modified suscessfully',user:users[userIndex]});
     }
@@ -53,12 +56,9 @@ export async function DELETE(request,{ params }){
     const authed = verifyTokenFromRequest(request)
     if(!authed) return NextResponse.json({message:'Unauthorized'},{status:401})
 
-    // only admin can delete
-    if(authed.role !== 'admin') return NextResponse.json({message:'Forbidden'},{status:403})
-
     const id = Number(params.id);
 
-    const users = await readUsers()
+    const users = await readUsers(authed.id)
 
     const userIndex = users.findIndex(user=> user.id===id)
 
@@ -66,7 +66,7 @@ export async function DELETE(request,{ params }){
 
     users.splice(userIndex,1)
 
-    await writeUsers(users)
+    await writeUsers(users, authed.id)
 
     return NextResponse.json({message:`user with id ${id} deleted suscessfully`})
 

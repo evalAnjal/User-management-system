@@ -32,7 +32,7 @@ export default function RegisterPage(){
   }
 
   return (
-    <div style={{display:'flex',justifyContent:'center',padding:40}}>
+    <div style={{display:'flex',justifyContent:'center', alignItems:'center',padding:40,height:'100vh'}}>
       <form onSubmit={handleSubmit} style={{width:420,background:'#fff',padding:20,borderRadius:12,boxShadow:'0 10px 30px rgba(2,6,23,0.08)'}}>
         <h2 style={{marginTop:0}}>Create account</h2>
         <input value={name} onChange={e=>setName(e.target.value)} placeholder="Full name" style={{width:'100%',padding:10,marginBottom:8,borderRadius:8,border:'1px solid #e5e7eb'}} />
