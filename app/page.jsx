@@ -11,6 +11,7 @@ export default function Home() {
   const [query, setQuery] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [auth, setAuth] = useState(null)
 
   useEffect(() => {
     async function loadUsers() {
@@ -22,10 +23,31 @@ export default function Home() {
       setUsers(safeUsers); 
     }
 
+    async function loadAuth(){
+      try{
+        const res = await fetch('/api/auth/me',{credentials:'include'})
+        const data = await res.json()
+        if(data?.authenticated) setAuth(data.user)
+        else setAuth(null)
+      }catch(e){ setAuth(null) }
+    }
+
     loadUsers();
+    loadAuth();
   }, []);
 
- async function handleDelete(id){
+  async function handleLogout(){
+    try{
+      await fetch('/api/auth/logout',{method:'POST',credentials:'include'})
+      setAuth(null)
+      // refresh users from server
+      const r = await fetch('/api/users')
+      const d = await r.json()
+      setUsers(Array.isArray(d)?d:[])
+    }catch(e){ console.error(e) }
+  }
+
+  async function handleDelete(id){
     try{
       const response = await fetch(`/api/users/${id}`,{method:'DELETE', credentials: 'include'})
       const body = await response.json()
@@ -65,9 +87,23 @@ export default function Home() {
             <h1 style={{margin:0, fontSize:20, fontWeight:700}}>User management System</h1>
             <p style={{margin: '6px 0 0', color:'#4b5563'}}>Manage users — view, edit and remove entries</p>
           </div>
-          <div style={{textAlign:'right'}}>
-            <div style={{fontSize:12, color:'#6b7280'}}>Total</div>
-            <div style={{fontWeight:700, fontSize:18}}>{users.length}</div>
+          <div style={{textAlign:'right', display:'flex', gap:12, alignItems:'center'}}>
+            <div style={{textAlign:'right'}}>
+              <div style={{fontSize:12, color:'#6b7280'}}>Total</div>
+              <div style={{fontWeight:700, fontSize:18}}>{users.length}</div>
+            </div>
+            {auth ? (
+              <div style={{textAlign:'right'}}>
+                <div style={{fontSize:12,color:'#6b7280'}}>Signed in</div>
+                <div style={{fontWeight:700}}>{auth.name}</div>
+                <button onClick={handleLogout} style={{marginLeft:8, padding:'6px 10px', borderRadius:8, border:'none', background:'#ef4444', color:'#fff', cursor:'pointer'}}>Logout</button>
+              </div>
+            ) : (
+              <div style={{display:'flex',gap:8}}>
+                <a href="/login" style={{padding:'8px 12px', borderRadius:8, background:'#fff', border:'1px solid #e5e7eb', textDecoration:'none', color:'#111'}}>Login</a>
+                <a href="/register" style={{padding:'8px 12px', borderRadius:8, background:'#2563eb', color:'#fff', textDecoration:'none'}}>Register</a>
+              </div>
+            )}
           </div>
         </header>
 
@@ -78,7 +114,11 @@ export default function Home() {
             placeholder="Search by name or email..."
             style={{flex:1, padding:'10px 12px', borderRadius:10, border:'1px solid #e5e7eb', outline:'none', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.5)'}}
           />
-          <button onClick={()=>setShowAdd(true)} style={{padding:'10px 14px', background:'#2563eb', color:'#fff', border:'none', borderRadius:10, cursor:'pointer'}}>Add user</button>
+          {auth ? (
+            <button onClick={()=>setShowAdd(true)} style={{padding:'10px 14px', background:'#2563eb', color:'#fff', border:'none', borderRadius:10, cursor:'pointer'}}>Add user</button>
+          ) : (
+            <div style={{color:'#6b7280',fontSize:'0.9rem'}}>Login to create users</div>
+          )}
         </div>
 
         <main>
@@ -87,7 +127,7 @@ export default function Home() {
           ) : (
             <div style={{display:'flex', flexDirection:'column', gap:14, paddingBottom:8}}>
               {filtered.map(user => (
-                <UserModal key={user.id} {...user} bg="#fafafa" handleDelete={handleDelete} handleEdit={handleEdit} />
+                <UserModal key={user.id} {...user} bg="#fafafa" handleDelete={auth && auth.role==='admin' ? handleDelete : undefined} handleEdit={auth ? handleEdit : undefined} />
               ))}
             </div>
           )}
