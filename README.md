@@ -26,3 +26,6 @@ then
 then
 
 `bun run dev` or `npm run dev` depending on your package manager
+
+
+some screenshots of application are below
